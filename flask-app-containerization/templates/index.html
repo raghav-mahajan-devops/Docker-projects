@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flask App Containerization</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #e4eaee;
+    color: #16252f;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+  }
+  main {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border: 2px solid #143347;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .top { background: #143347; color: #fff; padding: 1.5rem; }
+  .top h1 { font-size: 1.6rem; color: #f4b81c; }
+  .top p { margin-top: .35rem; color: #b9cad4; }
+  .body { padding: 1.5rem; }
+  .status { display: flex; align-items: center; gap: .75rem; font-size: 1.1rem; font-weight: 600; }
+  .dot { width: .85rem; height: .85rem; border-radius: 50%; background: #aab6bd; }
+  .dot.up { background: #2f9e5b; box-shadow: 0 0 0 4px rgba(47,158,91,.2); }
+  .dot.down { background: #b8502d; box-shadow: 0 0 0 4px rgba(184,80,45,.2); }
+  dl { margin-top: 1.25rem; display: grid; grid-template-columns: auto 1fr; gap: .5rem 1.25rem; }
+  dt { color: #5a6d79; }
+  dd { font-family: ui-monospace, Menlo, Consolas, monospace; text-align: right; overflow-wrap: anywhere; }
+  button {
+    margin-top: 1.5rem; width: 100%;
+    font: 600 1rem system-ui, sans-serif;
+    padding: .75rem; border: 0; border-radius: 4px;
+    background: #f4b81c; color: #143347; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.06); }
+  button:focus-visible { outline: 3px solid #143347; outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="top">
+      <h1>Flask App Containerization</h1>
+      <p>A Flask app running inside a Docker container.</p>
+    </div>
+    <div class="body">
+      <div class="status"><span class="dot" id="dot"></span><span id="msg">Checking server...</span></div>
+      <dl>
+        <dt>Health endpoint</dt><dd>/health</dd>
+        <dt>Response time</dt><dd id="ms">-</dd>
+        <dt>Last checked</dt><dd id="time">-</dd>
+        <dt>Served from</dt><dd id="host">-</dd>
+      </dl>
+      <button id="btn" type="button">Check again</button>
+    </div>
+  </main>
+
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+  $('host').textContent = location.host;
+
+  function check() {
+    var t0 = performance.now();
+    fetch('/health', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.text(); })
+      .then(function (text) {
+        $('dot').className = 'dot up';
+        $('msg').textContent = text;
+        $('ms').textContent = Math.round(performance.now() - t0) + ' ms';
+      })
+      .catch(function () {
+        $('dot').className = 'dot down';
+        $('msg').textContent = 'Server is not responding';
+        $('ms').textContent = '-';
+      })
+      .then(function () { $('time').textContent = new Date().toLocaleTimeString(); });
+  }
+
+  $('btn').addEventListener('click', check);
+  check();
+  setInterval(check, 5000);
+</script>
+</body>
+</html>
