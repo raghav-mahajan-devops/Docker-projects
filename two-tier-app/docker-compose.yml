@@ -39,4 +39,4 @@ services:
 
 networks:
   two-tier-net:
-    name: tow-tier-net
+    name: two-tier-net
